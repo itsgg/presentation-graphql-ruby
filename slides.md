@@ -26,6 +26,7 @@ info: |
 
 <!--
 Don't confuse with Graph Databases.
+Avoids under-fetching and over-fetching.
 -->
 
 ---
@@ -33,6 +34,51 @@ Don't confuse with Graph Databases.
 <center>
   <img src="/images/overview.png" GraphQL Overview />
 </center>
+
+---
+
+## GraphQL Way
+
+### Typed Schema
+
+- All fields have types, either primitive or custom.
+
+### Declarative Language
+
+- The client language is declarative instead of imperative.
+
+### Single endpoint and client language
+
+- These allows easy client access, without under-fetching or over-fetching.
+
+### Simple versioning
+
+- Versioning is avoided all together.
+- To maintain compatbility add new fields and types without removing the old ones.
+
+---
+
+## Cons
+
+### Security
+
+- Overly complex queries can be used for resource-exhaustion attacks.
+- Implement cost analysis on the query in advance.
+- Enforce limits on the amount of data that can be consumed.
+- Implement timeout to kill long running requests.
+- Implement other general API security restrictions like whitelist, rate limiting etc.
+
+### Caching and optimizing
+
+- REST APIs can easily be cached because of dictionrary like nature, using URL as the cache key.
+- In graphql we can use the query text as key to cache its response.
+- We can normalize a query response into a flat collection of records with a global unique ID.
+
+### Learning curve
+
+- Steep learning curve.
+- Have to learn the syntax of a new declarative language.
+- Have to understand concepts like schemas, resolvers etc.
 
 ---
 
@@ -169,7 +215,13 @@ subscription todosChanged {
 ---
 
 <style style="text/css">
+
 h2 {
   margin-bottom: 0.5em !important;
 }
+
+h3 {
+  margin-top: 0.5em !important;
+}
+
 </style>
