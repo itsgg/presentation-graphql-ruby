@@ -8,26 +8,168 @@ info: |
   https://itsgg.com
 ---
 
-# GraphQL 101 (Ruby Edition)
+<!-- markdownlint-disable no-duplicate-header -->
+<!-- markdownlint-disable no-inline-html -->
+
+# GraphQL 101 <br /> (Ruby Edition)
 
 ---
 
-## What
+## Introduction
 
 - **Graph**: data structure **QL**: query language.
 - Query language for data API.
 - Declarative, flexible, and efficient.
+- Optimize data communication between client and server.
+- JSON is commonly used for data communication.
+- Allows API introspection.
+
+<!--
+Don't confuse with Graph Databases.
+-->
 
 ---
 
-## What - Cont..
-
-<center><img src="/images/overview.png" GraphQL Overview /></center>
-
----
-
-## Why
+<center>
+  <img src="/images/overview.png" GraphQL Overview />
+</center>
 
 ---
 
-## How
+## Sample Application
+
+A simple TODO application (Ruby/React)
+
+- Signup
+- Login
+- Create a todo.
+- Update a todo.
+- Delete a todo.
+- View realtime updates.
+
+---
+
+## Schema
+
+Also called as
+
+- Schema Definition Language (SDL)
+- Interface Definition Language (IDL)
+
+```graphql
+type Todo(id: Int!) {
+  title: String!
+  complete: Boolean!
+}
+```
+
+> Exclamation(!) after the types means that they cannot be empty
+
+<!--
+The Todo model can be looked by with an integer id.
+-->
+
+---
+
+## Queries
+
+Represent **READ** operations.
+
+### Request
+
+```graphql
+query {
+  todo(id: 1) {
+    id
+    title
+    complete
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "todo": {
+      "id": 1,
+      "title": "Buy milk",
+      "complete": false
+    }
+  }
+}
+```
+
+---
+
+## Mutations
+
+Represent **WRITE**-then-**READ** operations.
+
+### Request
+
+```graphql
+mutation {
+  createTodo(title: "Buy Dogecoin!", complete: true) {
+    todo {
+      id
+      title
+      complete
+    }
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "todo": {
+      "id": 2,
+      "title": "Buy Dogecoin!",
+      "complete": true
+    }
+  }
+}
+```
+
+---
+
+## Subscriptions
+
+Continous **READ** operations
+
+### Request
+
+```graphql
+subscription todosChanged {
+  todo {
+    id
+    title
+    complete
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "todos": [
+      { "id": 1, "title": "Buy milk", "complete": false },
+      { "id": 2, "title": "Buy Dogecoin!", "complete": true }
+    ]
+  }
+}
+```
+
+---
+
+<style style="text/css">
+h2 {
+  margin-bottom: 0.5em !important;
+}
+</style>
