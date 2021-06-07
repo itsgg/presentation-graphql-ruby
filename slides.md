@@ -14,9 +14,7 @@ info: |
 
 ## What
 
-<!--
-
--->
+- **Graph**(data structure) **QL**(query language)
 
 ---
 
