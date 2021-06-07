@@ -214,6 +214,33 @@ subscription todosChanged {
 
 ---
 
+## Requests
+
+### Document
+
+- A request document contains queries, mutations, subscriptions and fragments
+
+### Variables  
+
+- An object that represents values used in the document.
+
+### Meta-information
+
+- Which operation to execute if the document contains more than one operations.
+
+```graphql
+query Todo {
+  todo(id: $userId) {
+    title
+    ...userInfo
+  }
+}
+
+fragment userInfo on User {
+  email
+}
+```
+
 <style style="text/css">
 
 h2 {
