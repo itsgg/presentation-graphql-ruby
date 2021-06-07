@@ -1,6 +1,6 @@
 ---
 theme: default
-class: 'text-center'
+class: "text-center"
 download: true
 highlighter: shiki
 info: |
@@ -14,7 +14,15 @@ info: |
 
 ## What
 
-- **Graph**(data structure) **QL**(query language)
+- **Graph**: data structure **QL**: query language.
+- Query language for data API.
+- Declarative, flexible, and efficient.
+
+---
+
+## What - Cont..
+
+<center><img src="/images/overview.png" GraphQL Overview /></center>
 
 ---
 
