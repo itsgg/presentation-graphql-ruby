@@ -93,6 +93,14 @@ A simple TODO application (Ruby/React)
 - Delete a todo.
 - View realtime updates.
 
+### Source Code
+
+- [https://github.com/itsgg/todo-app](https://github.com/itsgg/todo-app)
+
+### API Documentation
+
+- [https://documenter.getpostman.com/view/13745138/TzY7cD19](https://documenter.getpostman.com/view/13745138/TzY7cD19)
+
 ---
 
 ## Schema
@@ -220,7 +228,7 @@ subscription todosChanged {
 
 - A request document contains queries, mutations, subscriptions and fragments
 
-### Variables  
+### Variables
 
 - An object that represents values used in the document.
 
@@ -239,6 +247,203 @@ query Todo {
 fragment userInfo on User {
   email
 }
+```
+
+---
+
+## Mutation
+
+```ruby
+module Mutations
+  class Register < Types::BaseMutation
+    type Types::UserType
+    null false
+
+    argument :email, String, required: true
+    argument :password, String, required: true
+
+    def resolve(email:, password:)
+      User.create! email: email, password: password
+    end
+  end
+end
+```
+
+```ruby
+module Types
+  class MutationType < Types::BaseObject
+    field :register, mutation: Mutations::Register
+  end
+end
+```
+
+---
+
+## Query Resolver
+
+```ruby
+module Resolvers
+  class TodoResolver < Types::BaseResolver
+    type [Types::TodoType], null: false
+
+    def resolve
+      user = context[:current_user]
+      authorize! user, to: :manage_todos?
+      user.todos
+    end
+  end
+end
+```
+
+```ruby
+module Types
+  class QueryType < Types::BaseObject
+    field :todos, resolver: Resolvers::TodoResolver
+  end
+end
+```
+
+---
+
+## Subscriptions
+
+```ruby
+module Subscriptions
+  class TodoCreated < GraphQL::Schema::Subscription
+    payload_type Types::TodoType
+    null true
+
+    def subscribe
+      nil
+    end
+
+    def update
+      object
+    end
+  end
+end
+```
+
+```ruby
+module Types
+  class SubscriptionType < Types::BaseObject
+    field :todo_created, subscription: Subscriptions::TodoCreated
+  end
+end
+```
+
+---
+
+## Configuring Subscriptions
+
+```ruby
+class TodoAppSchema < GraphQL::Schema
+  use GraphQL::Subscriptions::ActionCableSubscriptions
+
+  mutation(Types::MutationType)
+  query(Types::QueryType)
+  subscription(Types::SubscriptionType)
+end
+```
+
+```ruby
+class GraphqlChannel < ApplicationCable::Channel
+  def subscribed
+    @subscription_ids = []
+  end
+
+  def execute(data)
+    # Snip....
+    transmit({ result: result.subscription? ? { data: nil } : result.to_h, more: result.subscription? })
+  end
+
+  def unsubscribed
+    @subscription_ids.each do |sid|
+      TodoAppSchema.subscriptions.delete_subscription(sid)
+    end
+  end
+end
+
+```
+
+---
+
+## Triggering Subscriptions
+
+```ruby
+class Todo < ApplicationRecord
+  after_commit :notify_new_todo
+
+  private
+
+  def notify_new_todo
+    TodoAppSchema.subscriptions.trigger('todoCreated', {}, self)
+  end
+end
+```
+
+### Only to few clients
+
+```ruby
+subscription_scope :current_user_id
+TodoAppSchema.subscriptions.trigger('todoCreated', {}, self, scope: self.user_id)
+```
+
+---
+
+## Testing Query Resolvers
+
+```ruby
+require 'rails_helper'
+
+module Resolvers
+  RSpec.describe TodoResolver, type: :request do
+    # snip...
+
+    describe '.resolve' do
+      it 'success' do
+        post_to_graphql(query: gql, token: user.token, variables: {})
+        json = JSON.parse(response.body)
+        data = json['data']
+        expect(data['todos'].count).to eq(todos.count)
+      end
+
+      it 'failure' do
+        post_to_graphql(query: gql, token: 'INVALID', variables: {})
+        json = JSON.parse(response.body)
+        expect(json['errors']).to be_present
+      end
+    end
+  end
+end
+
+```
+
+---
+
+## Testing Mutations
+
+```ruby
+require 'rails_helper'
+
+module Mutations
+  RSpec.describe CreateTodo, type: :request do
+    # snip...
+    describe '.resolve' do
+      it 'success' do
+        expect do
+          post_to_graphql(query: gql, token: user.token, variables: { title: 'Change the world' })
+        end.to change(Todo, :count)
+      end
+
+      it 'failure' do
+        expect do
+          post_to_graphql(query: gql, token: 'INVALID', variables: { title: 'Give up' })
+        end.not_to change(Todo, :count)
+      end
+    end
+  end
+end
 ```
 
 <style style="text/css">
